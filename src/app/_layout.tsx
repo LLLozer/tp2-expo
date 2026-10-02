@@ -1,18 +1,42 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { ComedorProvider, useComedor } from '../context/ComedorContext';
 
-SplashScreen.preventAutoHideAsync();
+export const unstable_settings = { anchor: '(tabs)' };
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+function NavegacionRaiz() {
+  const { conSesion } = useComedor();
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+      <Stack.Screen
+        name="confirmar"
+        options={{ presentation: 'modal', title: 'Confirmar pedido' }}
+      />
+
+      <Stack.Protected guard={conSesion}>
+        <Stack.Screen name="cocina" options={{ headerShown: false }} />
+      </Stack.Protected>
+
+      <Stack.Protected guard={!conSesion}>
+        <Stack.Screen
+          name="login"
+          options={{ presentation: 'modal', title: 'Ingreso de cocina' }}
+        />
+      </Stack.Protected>
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ComedorProvider>
+        <NavegacionRaiz />
+      </ComedorProvider>
+    </GestureHandlerRootView>
   );
 }
